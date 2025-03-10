@@ -1,5 +1,5 @@
-#define outputA 36
-#define outputB 39
+#define outputA 19
+#define outputB 21
 
 int counter = 0; 
 int aState;
@@ -7,8 +7,8 @@ int aLastState;
 
 void setup()
 {
-  pinMode(outputA, INPUT_PULLUP);
-  pinMode(outputB, INPUT_PULLUP);
+  pinMode(outputA, INPUT_PULLDOWN);
+  pinMode(outputB, INPUT_PULLDOWN);
 
   Serial.begin(115200);
   aLastState = digitalRead(outputB);
