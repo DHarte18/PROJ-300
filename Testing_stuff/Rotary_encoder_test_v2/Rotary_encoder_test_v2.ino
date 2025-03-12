@@ -1,3 +1,4 @@
+/*{
 #define outputA 19
 #define outputB 21
 
@@ -31,3 +32,4 @@ void loop()
   }
   aLastState = aState;
 }
+}*/
