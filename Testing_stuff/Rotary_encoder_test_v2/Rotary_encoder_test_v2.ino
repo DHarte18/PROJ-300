@@ -1,65 +1,35 @@
+/*{
+#define outputA 19
+#define outputB 21
 
-#define outputFRA 22
-#define outputFRB 23
-#define outputFLA 19
-#define outputFLB 21
-
-int counterFR = 0; 
-int aStateFR;
-int aLastStateFR;
-int counterFL = 0; 
-int aStateFL;
-int aLastStateFL;
+int counter = 0; 
+int aState;
+int aLastState;  
 
 void setup()
 {
-  pinMode(outputFRA, INPUT_PULLDOWN);
-  pinMode(outputFRB, INPUT_PULLDOWN);
-
-  pinMode(outputFLA, INPUT_PULLDOWN);
-  pinMode(outputFLB, INPUT_PULLDOWN); 
+  pinMode(outputA, INPUT_PULLDOWN);
+  pinMode(outputB, INPUT_PULLDOWN);
 
   Serial.begin(115200);
-  aLastStateFR = digitalRead(outputFRB);
-  aLastStateFL = digitalRead(outputFLB);
+  aLastState = digitalRead(outputB);
 }
 
 void loop()
 {
-  aStateFR = digitalRead(outputFRA);
-  if(aStateFR != aLastStateFR)
+  aState = digitalRead(outputA);
+  if(aState != aLastState)
   {
-    if(digitalRead(outputFRB) != aStateFR)
+    if(digitalRead(outputB) != aState)
     {
-      counterFR++;
+      counter++;
     } else
     {
-      counterFR--;
+      counter--;
     }
-    Serial.print("Position FR ");
-    Serial.println(counterFR);
-    aLastStateFR = aStateFR;
-  } else
-  {
-    ;
+    Serial.print("Position");
+    Serial.println(counter);
   }
-
-  aStateFL = digitalRead(outputFLA);
-  if(aStateFL != aLastStateFL)
-  {
-    if(digitalRead(outputFLB) != aStateFL)
-    {
-      counterFL++;
-    } else
-    {
-      counterFL--;
-    }
-    Serial.print("Position FL ");
-    Serial.println(counterFL);
-    aLastStateFL = aStateFL;
-  } else 
-  {
-    ;
-  }
-  
+  aLastState = aState;
 }
+}*/
