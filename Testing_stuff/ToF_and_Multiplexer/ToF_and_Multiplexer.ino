@@ -31,20 +31,27 @@ void setup()
 void loop() 
 {
   TCA9548A(0);
-  VL53L0X_RangingMeasurementData_t measure;
+  VL53L0X_RangingMeasurementData_t measure0;
   //Serial.print("Reading a measurement... ");
-  lox.rangingTest(&measure, false); // pass in 'true' to get debug data printout!
+  lox.rangingTest(&measure0, false); // pass in 'true' to get debug data printout!
 
-  if (measure.RangeStatus != 4) {  // phase failures have incorrect data
-    Serial.print("Channel 0 Distance (mm): "); Serial.println(measure.RangeMilliMeter);
+  if (measure0.RangeStatus != 4) {  // phase failures have incorrect data
+    Serial.print("Ch. 0 Distance (mm): "); Serial.println(measure0.RangeMilliMeter);
   } else {
-    Serial.println("Channel 0 out of range");
+    Serial.println("Ch. 0 out of range");
   }
     
   delay(100);
 
-  //TCA9548A(1);
-  //VL53L0X_RangingMeasurementData_t measure;
+  TCA9548A(1);
+  VL53L0X_RangingMeasurementData_t measure1;
+  lox.rangingTest(&measure1, false);
+
+  if(measure1.RangeStatus != 4) {
+    Serial.print("Ch.1 Distance (mm): "); Serial.println(measure1.RangeMilliMeter);
+  } else {
+    Serial.println("Ch.1 out of range");
+  }
 }
 
 void TCA9548A (uint8_t bus)
