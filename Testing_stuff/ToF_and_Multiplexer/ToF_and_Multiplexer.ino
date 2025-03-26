@@ -9,23 +9,27 @@ Adafruit_VL53L0X lox = Adafruit_VL53L0X();
 void setup() 
 {
   Serial.begin(115200);
+  Wire.begin();
   while(! Serial)
   {
     delay(1);
   }
   Serial.println("Multiplexer and T-o-F test");
+
   TCA9548A(0);
   if(!lox.begin())
   {
     Serial.println(F("Failed to boot channel 0 T-o-F sensor"));
     while(1);
   } else {;}
+  
   TCA9548A(1);
   if(!lox.begin())
   {
     Serial.println(F("Failed to boot channel 1 T-o-F sensor"));
     while(1);
   } else {;}
+  
 }
 
 void loop() 
@@ -40,8 +44,7 @@ void loop()
   } else {
     Serial.println("Ch. 0 out of range");
   }
-    
-  delay(100);
+  delay(25);
 
   TCA9548A(1);
   VL53L0X_RangingMeasurementData_t measure1;
@@ -52,6 +55,7 @@ void loop()
   } else {
     Serial.println("Ch.1 out of range");
   }
+  delay(25);
 }
 
 void TCA9548A (uint8_t bus)
