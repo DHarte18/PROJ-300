@@ -16,14 +16,14 @@ void setup()
   }
   Serial.println("Multiplexer and T-o-F test");
 
-  TCA9548A(0);
+  TCA9548A(2);
   if(!lox.begin())
   {
     Serial.println(F("Failed to boot channel 0 T-o-F sensor"));
     while(1);
   } else {;}
   
-  TCA9548A(1);
+  TCA9548A(3);
   if(!lox.begin())
   {
     Serial.println(F("Failed to boot channel 1 T-o-F sensor"));
@@ -34,7 +34,7 @@ void setup()
 
 void loop() 
 {
-  TCA9548A(0);
+  TCA9548A(2);
   VL53L0X_RangingMeasurementData_t measure0;
   //Serial.print("Reading a measurement... ");
   lox.rangingTest(&measure0, false); // pass in 'true' to get debug data printout!
@@ -46,7 +46,7 @@ void loop()
   }
   delay(25);
 
-  TCA9548A(1);
+  TCA9548A(3);
   VL53L0X_RangingMeasurementData_t measure1;
   lox.rangingTest(&measure1, false);
 
