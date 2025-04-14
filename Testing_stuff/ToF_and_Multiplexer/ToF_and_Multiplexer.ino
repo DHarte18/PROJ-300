@@ -10,6 +10,7 @@ Adafruit_VL53L0X lox = Adafruit_VL53L0X();
 int FLdis = 0; int FMdis = 0; int FRdis = 0;
 int BLdis = 0; int BMdis = 0; int BRdis = 0;
 
+int delays = 25;
 
 void setup() 
 {
@@ -41,7 +42,7 @@ void setup()
     Serial.println(F("Failed to boot FL"));
     while(1);
   } else {;}
-/*        THESE ARE HERE FOR LATER  
+ 
   TCA9548A(6);
   if(!lox.begin()) {
     Serial.println(F("Failed to boot BM"));
@@ -53,11 +54,11 @@ void setup()
     Serial.println(F("Failed to boot BL"));
     while(1);
   } else {;}
-*/
 }
 
 void loop() 
 {
+  
   TCA9548A(2);//Back Right
   VL53L0X_RangingMeasurementData_t measure2;
   lox.rangingTest(&measure2, false);  // pass in 'true' to get debug data printout!
@@ -65,7 +66,7 @@ void loop()
     BRdis = measure2.RangeMilliMeter; //Update distance measurement
   } else {
     BRdis = 9001;                     //IT'S OVER 9000 (error number)
-  } delay(25);
+  } delay(delays);
 
   TCA9548A(3);//Front Right
   VL53L0X_RangingMeasurementData_t measure3;
@@ -74,7 +75,7 @@ void loop()
     FRdis = measure3.RangeMilliMeter;
   } else {
     FRdis = 9001;
-  } delay(25);
+  } delay(delays);
 
   TCA9548A(4);//Front Middle
   VL53L0X_RangingMeasurementData_t measure4;
@@ -83,7 +84,7 @@ void loop()
     FMdis = measure4.RangeMilliMeter;
   } else {
     FMdis = 9001;
-  } delay(25);
+  } delay(delays);
 
   TCA9548A(5);//Front Left
   VL53L0X_RangingMeasurementData_t measure5;
@@ -92,26 +93,25 @@ void loop()
     FLdis = measure5.RangeMilliMeter;
   } else {
     FLdis = 9001;
-  } delay(25);
-  /*    THIS IS FOR LATER 
+  } delay(delays);
+  
   TCA9548A(6);//Back Middle
   VL53L0X_RangingMeasurementData_t measure6;
   lox.rangingTest(&measure6, false);
-  if(measure6 != 4) {
-    BMdis = measure.RangeMilliMeter;
+  if(measure6.RangeStatus != 4) {
+    BMdis = measure6.RangeMilliMeter;
   } else {
     BMdis = 9001;
-  } delay(25);
+  } delay(delays);
 
   TCA9548A(7);//Back Left
   VL53L0X_RangingMeasurementData_t measure7;
   lox.rangingTest(&measure7, false);
-  if(measure7 != 4) {
-    BLdis = measure.RangeMilliMeter;
+  if(measure7.RangeStatus != 4) {
+    BLdis = measure7.RangeMilliMeter;
   } else {
     BLdis = 9001;
   } delay(25);
-  */
 
   int ToFarr[1][6] = {FLdis,FMdis,FRdis,BLdis,BMdis,BRdis};
   int i,j;
