@@ -54,6 +54,7 @@ void setup()
     Serial.println(F("Failed to boot BL"));
     while(1);
   } else {;}
+  
 }
 
 void loop() 
