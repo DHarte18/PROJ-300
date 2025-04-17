@@ -40,8 +40,8 @@ int outBLang = 0; int outBRang = 0;
 
 //////////////////Callback function for when data is sent////////////////
 void OnDataSent (const uint8_t* mac_addr, esp_now_send_status_t status) {
-  Serial.print("\r\nLast Packet Send Status: \t");
-  Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
+  //Serial.print("\r\nLast Packet Send Status: \t");
+  //Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
   if(status == 0) {
     success = "Delivery Success :)";
   } else {
@@ -54,8 +54,8 @@ void OnDataRecv (const uint8_t* mac, const uint8_t* incomingReadings, int len) {
   memcpy(&incomingData, incomingReadings, sizeof(incomingData));
   inSampleRate = incomingData.sampleRate;
   inReady = incomingData.ready;
-  Serial.print(inSampleRate);
-  Serial.println(inReady);
+  //Serial.print(inSampleRate);
+  //Serial.println(inReady);
 }
 
 /////////////Function for channel assignment on multiplexer//////////////
@@ -70,14 +70,14 @@ void setup() {
   Serial.begin(115200);
   WiFi.mode(WIFI_STA);
   if(esp_now_init() != ESP_OK) {
-    Serial.println("Error initialising ESP_NOW");
+    //Serial.println("Error initialising ESP_NOW");
     return;
   }
   memcpy(peerInfo.peer_addr, destMACaddress, 6);
   peerInfo.channel = 0;
   peerInfo.encrypt = false;
   if(esp_now_add_peer(&peerInfo) != ESP_OK) {
-    Serial.println("Failed to add peer");
+    //Serial.println("Failed to add peer");
     return;
   }
   esp_now_register_recv_cb(esp_now_recv_cb_t(OnDataRecv));
@@ -88,7 +88,7 @@ void setup() {
   while(i<8) {
     TCA9548A(i);
     if(!lox.begin()) {
-      Serial.println(F("Failed to boot channel ")); Serial.println(i);
+      //Serial.println(F("Failed to boot channel ")); Serial.println(i);
       while(1);
     } else {;}
     i++;
@@ -158,9 +158,9 @@ void loop() {
   //Send struct message
   esp_err_t result = esp_now_send(destMACaddress, (uint8_t*) &outgoingReadings, sizeof(outgoingReadings));
   if(result == ESP_OK) {
-    Serial.println("Sent Successfully");
+    //Serial.println("Sent Successfully");
   } else {
-    Serial.println("Error Sending");
+    //Serial.println("Error Sending");
   }
   delay(inSampleRate);
 }
