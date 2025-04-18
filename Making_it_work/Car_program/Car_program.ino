@@ -29,7 +29,17 @@ struct_message2 incomingData;
 String success;                                               //Variable to store if data was sent successfully
 
 esp_now_peer_info_t peerInfo;                                 //Variabel to store info about PEER
-///////////////////////////////T-o-F Sensor prep/////////////////////////
+///////////////////////////Rotary Encoder Prep///////////////////////////
+TaskHandle_t RotEncRead;
+int pinArr[2][4] = {16, 4, 26, 27,      //FRApin, FLApin, BRApin, BLApin
+                    17, 2, 25, 14};     //FRBpin, FLBpin, BRBpin, BLBpin
+int posArr[1][4] = {0, 0, 0, 0};        //Array to hold enc position *before* it's converted to deg
+int aState[1][4];                       //Encoders A channel current state
+int aLastState[1][4];                   //Encoders A channel previous state
+int bufferPosArr[1][4] = {0, 0, 0, 0};  //Buffer array for reading info to send wirelessly
+uint8_t RotEncReady = 0;                //Value for when to start enc read loop
+
+////////////////////////////T-o-F Sensor prep////////////////////////////
 Adafruit_VL53L0X lox = Adafruit_VL53L0X();
 int outFLdis = 0; int outFMdis = 0; int outFRdis = 0;
 int outBLdis = 0; int outBMdis = 0; int outBRdis = 0;
@@ -64,6 +74,24 @@ void TCA9548A (uint8_t bus) {
   Wire.write(1<<bus);
   Wire.endTransmission();
 }
+//////////////////////Rotary Encoder Reading Loop////////////////////////
+void RotEncReadCode() {
+  //Serial.print("RotEncReadLoop running on core ");
+  //Serial.println(xPortGetCoreID());
+    //for(;;) {
+      for(int i=0; i<4; i++) {            //Loop that iterates through pin assignment array
+      aState[0][i] = digitalRead(pinArr[0][i]); // and changes angle based on change
+      if(aState[0][i] != aLastState[0][i]) {  //between A & B channels of encoders and
+        if(digitalRead(pinArr[1][i]) != aState[0][i]) { // stores it in an array
+          posArr[0][i]++;
+        } else {
+          posArr[0][i]--;
+        }
+      }aLastState[0][i] = aState[0][i];
+    }
+    memcpy(&bufferPosArr, posArr, sizeof(bufferPosArr));
+    //}
+}
 
 ////////////////////////////Standard Loops///////////////////////////////  
 void setup() {
@@ -81,7 +109,7 @@ void setup() {
     return;
   }
   esp_now_register_recv_cb(esp_now_recv_cb_t(OnDataRecv));
-
+  //Time of Flight sensor startup sequence
   Wire.begin();
   while(! Serial) {delay(1);}
   int i = 2;
@@ -93,6 +121,23 @@ void setup() {
     } else {;}
     i++;
   }
+  //Rotary encoder start up sequence
+  for(int a=0; a<2; a++) {                    //Loop that iterates through pin assignment array
+    for(int b=0; b<4; b++) {                  //, sets internal pulldown to each pin and sets 
+      pinMode(pinArr[a][b], INPUT_PULLDOWN);  //initial "Last State" of each encoder
+      aLastState[0][b] = digitalRead(pinArr[0][b]);
+    }
+  }
+  /*
+  xTaskCreatePinnedToCore(RotEncReadCode,             //Function for task
+                          "Rotary Encoder Read Loop", //Name of task
+                          10000,                      //Stack size of task
+                          NULL,                       //Task parameter
+                          1,                          //Task priority
+                          &RotEncRead,                //Handle to keep track of task
+                          0);                         //Core to pin task to
+  */
+  //RotEncReady = 1;
 }
 
 void loop() {
@@ -103,7 +148,7 @@ void loop() {
     outBRdis = measure2.RangeMilliMeter; //Update distance measurement
   } else {
     outBRdis = 9001;                     //IT'S OVER 9000 (error number)
-  } delay(delays);
+  } RotEncReadCode();
 
   TCA9548A(3);//Front Right
   VL53L0X_RangingMeasurementData_t measure3;
@@ -112,7 +157,7 @@ void loop() {
     outFRdis = measure3.RangeMilliMeter;
   } else {
     outFRdis = 9001;
-  } delay(delays);
+  } RotEncReadCode();
 
   TCA9548A(4);//Front Middle
   VL53L0X_RangingMeasurementData_t measure4;
@@ -121,7 +166,7 @@ void loop() {
     outFMdis = measure4.RangeMilliMeter;
   } else {
     outFMdis = 9001;
-  } delay(delays);
+  } RotEncReadCode();
 
   TCA9548A(5);//Front Left
   VL53L0X_RangingMeasurementData_t measure5;
@@ -130,7 +175,7 @@ void loop() {
     outFLdis = measure5.RangeMilliMeter;
   } else {
     outFLdis = 9001;
-  } delay(delays);
+  } RotEncReadCode();
   
   TCA9548A(6);//Back Middle
   VL53L0X_RangingMeasurementData_t measure6;
@@ -139,7 +184,7 @@ void loop() {
     outBMdis = measure6.RangeMilliMeter;
   } else {
     outBMdis = 9001;
-  } delay(delays);
+  } RotEncReadCode();
 
   TCA9548A(7);//Back Left
   VL53L0X_RangingMeasurementData_t measure7;
@@ -148,19 +193,24 @@ void loop() {
     outBLdis = measure7.RangeMilliMeter;
   } else {
     outBLdis = 9001;
-  } delay(delays);
+  } RotEncReadCode();
   //Copy sensor readings to struct message to be sent
   outgoingReadings.FLdis = outFLdis; outgoingReadings.FMdis = outFMdis; outgoingReadings.FRdis = outFRdis;
   outgoingReadings.BLdis = outBLdis; outgoingReadings.BMdis = outBMdis; outgoingReadings.BRdis = outBRdis;
 
   outgoingReadings.FLang = outFLang; outgoingReadings.FRang = outFRang;
   outgoingReadings.BLang = outBLang; outgoingReadings.BRang = outBRang;
+  //Copy values of rotary encoder position to struct message to be sent
+  outgoingReadings.FRang = bufferPosArr[0][0]; outgoingReadings.FLang = bufferPosArr[0][1];
+  outgoingReadings.BRang = bufferPosArr[0][2]; outgoingReadings.BLang = bufferPosArr[0][3];
   //Send struct message
   esp_err_t result = esp_now_send(destMACaddress, (uint8_t*) &outgoingReadings, sizeof(outgoingReadings));
+  /*
   if(result == ESP_OK) {
-    //Serial.println("Sent Successfully");
+    Serial.println("Sent Successfully");
   } else {
-    //Serial.println("Error Sending");
+    Serial.println("Error Sending");
   }
+  */
   delay(inSampleRate);
 }

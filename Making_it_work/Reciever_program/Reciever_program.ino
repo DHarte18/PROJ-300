@@ -39,6 +39,7 @@ esp_now_peer_info_t peerInfo;                                 //Variable to stor
 
 /////////////////////Callback function for when data is sent///////////////////
 void OnDataSent (const uint8_t* mac_addr, esp_now_send_status_t status) {
+  /*
   Serial.print("\r\nLast Packet Send Status: \t");
   Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivey Success" : "Delivery Fail");
   if (status == 0) {
@@ -46,6 +47,7 @@ void OnDataSent (const uint8_t* mac_addr, esp_now_send_status_t status) {
   } else {
     success = "Delivery Failure :(";
   }
+  */
 }
 
 //////////////////Callback function for when data is recieved//////////////////
@@ -56,8 +58,12 @@ void OnDataRecv (const uint8_t* mac, const uint8_t* incomingData, int len) {
 
   FLang = incomingReadings.FLang; FRang = incomingReadings.FRang;
   BLang = incomingReadings.BLang; BRang = incomingReadings.BRang;
+  
   cout<<"\n\r"<<FLdis<<" "<<FMdis<<" "<<FRdis;
   cout<<"\n\r"<<BLdis<<" "<<BMdis<<" "<<BRdis;
+  cout<<"\n\r"<<" ";
+  cout<<"\n\r"<<FLang<<" "<<FRang;
+  cout<<"\n\r"<<BLang<<" "<<BRang;
   cout<<endl;
 }
 
@@ -90,9 +96,12 @@ void loop() {
   outgoingData.ready = outReady;
   //Send message w/ ESP_NOW
   esp_err_t result = esp_now_send(destMACaddress, (uint8_t*) &outgoingData, sizeof(outgoingData));
+  
   if (result == ESP_OK) {
-    Serial.println("Sent successfully");
+    //Serial.println("Sent successfully");
   } else {
     Serial.println("Error Sending");
-  } delay(outSampleRate);
+  }
+  
+  delay(outSampleRate);
 }
