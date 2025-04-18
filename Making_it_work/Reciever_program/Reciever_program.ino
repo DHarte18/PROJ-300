@@ -13,6 +13,10 @@ uint8_t incomingToFArr[1][6];                                 //Array to store r
 uint8_t incomingRotEncArr[1][4];                              //Array to store recieved rotary encoder data
 uint8_t outSampleRate = 1000;                                           //Variable for sample rate to be sent in milliseconds
 uint8_t outReady = 0;
+unsigned long tStamp = 0;
+unsigned long lapStart = 0;
+int lapCounter = 2;
+
 int FLdis = 0; int FMdis = 0; int FRdis = 0;
 int BLdis = 0; int BMdis = 0; int BRdis = 0;
 int FLang = 0; int FRang = 0;
@@ -58,13 +62,18 @@ void OnDataRecv (const uint8_t* mac, const uint8_t* incomingData, int len) {
 
   FLang = incomingReadings.FLang; FRang = incomingReadings.FRang;
   BLang = incomingReadings.BLang; BRang = incomingReadings.BRang;
-  
+
+  tStamp = millis() - lapStart;
+
+  cout<<lapCounter<<","<<tStamp<<","<<FLdis<<","<<FMdis<<","<<FRdis<<","<<BLdis<<","<<BMdis<<","<<BRdis<<","<<FLang<<","<<FRang<<","<<BLang<<","<<BRang<<"\n";
+  /*
   cout<<"\n\r"<<FLdis<<" "<<FMdis<<" "<<FRdis;
   cout<<"\n\r"<<BLdis<<" "<<BMdis<<" "<<BRdis;
   cout<<"\n\r"<<" ";
   cout<<"\n\r"<<FLang<<" "<<FRang;
   cout<<"\n\r"<<BLang<<" "<<BRang;
   cout<<endl;
+  */
 }
 
 /////////////////////////////////Normal Loops//////////////////////////////////
@@ -87,6 +96,7 @@ void setup() {
     Serial.println("Failed to add peer");
     return;
   }
+  lapStart = millis();
   //Register callback function to be called when data recieved
   esp_now_register_recv_cb(esp_now_recv_cb_t(OnDataRecv));
 }
