@@ -16,5 +16,8 @@ while H >= a
         a = a + 1;
     end
 end
+%global BigMap;
 
-Timeline(selLapTable)
+
+Timeline(selLapTable);
+%plot3DOnClick(selLapTable);
