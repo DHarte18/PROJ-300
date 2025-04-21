@@ -1,12 +1,11 @@
 function plot3DOnClick(selLapTable)
-    
     % Create the figure
     f = figure('Name', '3D Plot on Mouse Click', ...
-               'WindowButtonDownFcn', @refreshPlot);
-
+               'WindowButtonDownFcn', @refreshPlot)
     % Initial plot
     refreshPlot();
-
+    %Introduce global variable to function
+    global selectedTime;
     % Callback function to refresh the 3D plot
     function refreshPlot(~, ~)
         % Access the BigTable

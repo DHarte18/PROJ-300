@@ -1,38 +1,46 @@
-function [selectedTime] = Timeline (freshData)
-% Declare the global variable at the top level
-global selectedTime;
+function Timeline(selLapTable)
+% setupTimelineClickPlot - Interactive timeline that triggers a callback
+%                          on each user click with the selected time.
+%
+% INPUT:
+%   selLapTable - table with 'Var2' column containing times in milliseconds
 
-% Plot the timeline
-figure;
-plot(freshData.Var2, zeros(height(freshData), 1), '-', 'LineWidth', 5, 'Color', "#FF9D8C");
-xlim([freshData.Var2(1,1) freshData.Var2(end,end)])
-xlabel('Time (ms)');
-title('Click on the timeline to get value');
-ylim([-0.5 0.5]);
-grid on;
-set(gcf, 'Position', [2440,40,1000,100]);
+    % Create figure and plot
+    figureHandle = figure;
+    plot(selLapTable.Var2, zeros(height(selLapTable), 1), 'o', 'MarkerSize', 8);
+    xlabel('Time (ms)');
+    ylabel('Event');
+    title('Click on the timeline to select a time');
+    ylim([-1 1]);
+    grid on;
 
-% Set up the click callback
-set(gcf, 'WindowButtonDownFcn', @(~, ~) onClick(freshData));
+    % Store selLapTable in the figure for access in callbacks
+    figureHandle.UserData.selLapTable = selLapTable;
+    figureHandle.UserData.selectedTime = NaN;  % Initialize
 
-function onClick(freshData)
-    % Declare the global variable inside the function
-    %global selectedTime;
-
-    % Get click location
-    cp = get(gca, 'CurrentPoint');
-    clickTime = cp(1,1);  % X-coordinate
-
-    % Find the closest time
-    [~, idx] = min(abs(freshData.Var2 - clickTime));
-
-    % Assign to global variable
-    selectedTime = freshData.Var2(idx);
-    %selectedValue = freshData.Value(idx);
-
-    % Display result
-    disp(['You clicked near time (ms): ', num2str(selectedTime)]);
-    %disp(['Corresponding value: ', num2str(selectedValue)]);
-    selectedTime
+    % Set click callback
+    set(figureHandle, 'WindowButtonDownFcn', @(src, ~) onClick(src));
 end
+
+function onClick(figHandle)
+    % Retrieve table from figure's UserData
+    selLapTable = figHandle.UserData.selLapTable;
+
+    % Get clicked x-position
+    cp = get(gca, 'CurrentPoint');
+    clickTime = cp(1,1);
+
+    % Find the closest point
+    [~, idx] = min(abs(selLapTable.Var2 - clickTime));
+    selectedTime = selLapTable.Var2(idx);
+
+    % Store selected time
+    figHandle.UserData.selectedTime = selectedTime;
+
+    % --- CALL YOUR CALLBACK FUNCTION ---
+    ThreeDPlot(selectedTime);
+end
+
+function ThreeDPlot(selectedTime, selLapTable)
+    
 end
