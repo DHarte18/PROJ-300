@@ -19,6 +19,6 @@ end
 
 Timeline(selLapTable);
 % Assume the figure is still open and active
-h = gcf;  % Or use stored handle
-currentSelectedTime = h.UserData
+%h = gcf;  % Or use stored handle
+%currentSelectedTime = h.UserData
 %disp(['Current selected time: ', num2str(currentSelectedTime)]);
