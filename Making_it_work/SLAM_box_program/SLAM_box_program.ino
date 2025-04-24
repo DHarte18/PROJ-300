@@ -1,3 +1,4 @@
+//////////////////////////////////SLAM BOX PROGRAM/////////////////////////////////
 #include <Adafruit_MPU6050.h>
 #include <Adafruit_Sensor.h>
 #include <TinyGPSPlus.h>
@@ -76,8 +77,6 @@ void setup() {
     Serial.println("Error initialising ESP_NOW");
     return;
   }
-  //After ESP_NOW start, send CB to get transmitted packet status
-  //esp_now_register_send_cb(OnDataSent);
   //Register peer
   memcpy(peerInfo.peer_addr, destMACaddress, 6);
   peerInfo.channel = 0;
@@ -115,19 +114,6 @@ void OnDataRecv (const uint8_t* mac, const uint8_t* incomingData, int len) {
   outgoingReadings.FLang = incomingReadings.FLang; outgoingReadings.FRang = incomingReadings.FRang;
   outgoingReadings.BLang = incomingReadings.BLang; outgoingReadings.BRang = incomingReadings.BRang;
 }
-///////////////Function to copy incoming data into outgoing data//////////////
-/*
-void IncomingDataToOutgoingData () {
-  outgoingReadings.FLdis = FLdis; outgoingReadings.FMdis = FMdis; outgoingReadings.FRdis = FRdis;
-  outgoingReadings.BLdis = BLdis; outgoingReadings.BMdis = BMdis; outgoingReadings.BRdis = BRdis;
-
-  outgoingReadings.FLang = FLang; outgoingReadings.FRang = FRang;
-  outgoingReadings.BLang = BLang; outgoingReadings.BRang = BRang;
-
-  outgoingReadings.coordx = coordx; outgoingReadings.coordy = coordy;
-  outgoingReadings.timeHour = timeHour; outgoingReadings.timeMin = timeMin; outgoingReadings.timeSec = timeSec; outgoingReadings.timeCentSec = timeCentSec;
-}
-*/
 //////////////////////////////////Multiplexer/////////////////////////////////
 void TCA9548A (uint8_t bus) {     //Function to select channel on multiplexer
   Wire.beginTransmission(0x70);
