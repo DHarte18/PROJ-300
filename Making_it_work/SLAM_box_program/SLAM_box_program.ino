@@ -1,34 +1,65 @@
 #include <Adafruit_MPU6050.h>
 #include <Adafruit_Sensor.h>
 #include <TinyGPSPlus.h>
+#include <SoftwareSerial.h>
 #include <iostream>
+#include <WiFi.h>
+#include <Wire.h>
+#include <esp_now.h>
+#include <Arduino.h>
 using namespace std;
 
-#define RXD2 16
-#define TXD2 17
-#define GPS_BAUD 9600
-
+//////////////////////////////////Position sensors//////////////////////////////////
 Adafruit_MPU6050 mpu;           //Object to handle mpus
 TinyGPSPlus gps;                //Object to handle TinyGPS
-HardwareSerial gpsSerial(2);    //Create instance of HardwareSerial class for Serial 2
+SoftwareSerial ss(16, 17);      //Create instance of SoftwareSerial class for Serial 2 on RX pin 16 & TX 17
+static const uint32_t GPSBaud = 9600; //Baud rate of GPS
 
 uint8_t sampleDelay = 100;        //Delay between loops of coordinate update
 uint8_t delays = 10;              //Delay between MPU reading for calculating distance change
 int MPU1A = 0;  int MPU1B = 0;    //Channel 0
 int MPU2A = 0;  int MPU2B = 0;    //Channel 1
 int MPU3A = 0;  int MPU3B = 0;    //Channel 2
-int coordx; = int coordy;         //Initialise position coordinates x and y
+double coordx = 0; double coordy = 0;         //Initialise position coordinates x and y
 unsigned long startTime;                //First time, in ms, a reading is taken
-unsigned long Time;                     //Tracker for time in ms
+unsigned long timeHour;                     //Tracker for time
+unsigned long timeMin;
+unsigned long timeSec;
+unsigned long timeCentSec;
 int startLat;                     //Initial longitude of lap
 int startLong;                    //Initial latitude of lap
 
-void TCA9548A (uint8_t bus) {     //Function to select channel on multiplexer
-  Wire.beginTransmission(0x70);
-  Wire.write(1<<bus);
-  Wire.endTransmission();
-}
+//////////////////////////////////////Wireless//////////////////////////////////////
+uint8_t destMACaddress[] = {0x20, 0x43, 0xa8, 0x64, 0x16, 0x20};
+int FLdis = 0; int FMdis = 0; int FRdis = 0;
+int BLdis = 0; int BMdis = 0; int BRdis = 0;
+int FLang = 0; int FRang = 0;
+int BLang = 0; int BRang = 0;
 
+typedef struct struct_message1 {
+  int FLdis; int FMdis; int FRdis;
+  int BLdis; int BMdis; int BRdis;
+
+  int FLang; int FRang;
+  int BLang; int BRang;
+} struct_message1;
+struct_message1 incomingReadings;
+
+typedef struct struct_message2 {
+  int FLdis; int FMdis; int FRdis;
+  int BLdis; int BMdis; int BRdis;
+
+  int FLang; int FRang;
+  int BLang; int BRang;
+  double coordx; double coordy;
+  int timeHour; int timeMin; int timeSec; int timeCentSec;
+} struct_message2;
+struct_message2 outgoingReadings;
+
+String success;
+
+esp_now_peer_info_t peerInfo;
+/////////////////////////////////////Main Loops/////////////////////////////////////
 void setup() {
   Serial.begin(115200);
   while (!Serial) {delay(1);}    //Wait for serial to begin before continuing setup
@@ -39,39 +70,67 @@ void setup() {
       cout<<"\n\r"<<"Failed initialise MPU on channel"<<i;
     } else {;}
   }
-  gpsSerial.begin(GPS_BAUD, SERIAL_8N1, RXD2, TXD2);
+  ss.begin(GPSBaud);
+  WiFi.mode(WIFI_STA);
+  if(esp_now_init() != ESP_OK) {
+    Serial.println("Error initialising ESP_NOW");
+    return;
+  }
+  //After ESP_NOW start, send CB to get transmitted packet status
+  //esp_now_register_send_cb(OnDataSent);
+  //Register peer
+  memcpy(peerInfo.peer_addr, destMACaddress, 6);
+  peerInfo.channel = 0;
+  peerInfo.encrypt = false;
+  //Add peer
+  if (esp_now_add_peer(&peerInfo) != ESP_OK) {
+    Serial.println("Failed to add peer");
+    return;
+  }
+  esp_now_register_recv_cb(esp_now_recv_cb_t(OnDataRecv));
 }
 
-void loop() {
-  unsigned long progBTime = millis();     //Program start time
-     
-  while (gpsSerial.available() > 0) {
-    gps.encode(gpsSerial.read());
+void loop() {     
+  while (ss.available() > 0) {
+    gps.encode(ss.read());
   }
-  for (int j=0; j<1; j++) {
-    if (gps.location.isUpdated()) {
-      startLat = gps.location.lat();
-      startLong = gps.location.lng();
-      coordx = 0;
-      coordy = 0;
-      Time = 0;
-      startTime = millis();
-      /////////CODE TO SEND POINT TO RECEIVER//////////
-    }
-  } else {
-    if (gps.location.isUpdated()) {
-      //coordx = (gps.location.lng() - startLat) converted to metres
-      //coordy = (gps.location.lat() - startLong) converted to metres
-      //Time = millis() - startTime;
-      //////////CODE TO SEND POINT AND TIME TO RECEIVER//////////
-    } else {
-      //read MPU 1, 2 & 3 accel store in "A"
-      //delay(delays);
-      //read MPUs accel again and store in "B"
-      //Distance = ((A+B)/2)*(delays)^2
-      //Add distance to coordx and coordy (distance is calc'd w/ regards to x and y to begin w/)
-      ////////////CODE TO SEND POINT AND TIME TO RECEIVER////////
-    }
-  }
+  outgoingReadings.coordx = gps.location.lat();
+  outgoingReadings.coordy = gps.location.lng();
+  outgoingReadings.timeHour = gps.time.hour();
+  outgoingReadings.timeMin = gps.time.minute();
+  outgoingReadings.timeSec = gps.time.second();
+  outgoingReadings.timeCentSec = gps.time.centisecond();
+
+  esp_err_t result = esp_now_send(destMACaddress, (uint8_t*) &outgoingReadings, sizeof(outgoingReadings));    //Send data to reciever
+  cout<<"\n\r"<<outgoingReadings.coordx<<","<<outgoingReadings.coordy;
+   
   delay(sampleDelay);
+}
+//////////////////Callback function for when data is recieved//////////////////
+void OnDataRecv (const uint8_t* mac, const uint8_t* incomingData, int len) {
+  memcpy(&incomingReadings, incomingData, sizeof(incomingReadings));
+  outgoingReadings.FLdis = incomingReadings.FLdis; outgoingReadings.FMdis = incomingReadings.FMdis; outgoingReadings.FRdis = incomingReadings.FRdis;
+  outgoingReadings.BLdis = incomingReadings.BLdis; outgoingReadings.BMdis = incomingReadings.BMdis; outgoingReadings.BRdis = incomingReadings.BRdis;
+
+  outgoingReadings.FLang = incomingReadings.FLang; outgoingReadings.FRang = incomingReadings.FRang;
+  outgoingReadings.BLang = incomingReadings.BLang; outgoingReadings.BRang = incomingReadings.BRang;
+}
+///////////////Function to copy incoming data into outgoing data//////////////
+/*
+void IncomingDataToOutgoingData () {
+  outgoingReadings.FLdis = FLdis; outgoingReadings.FMdis = FMdis; outgoingReadings.FRdis = FRdis;
+  outgoingReadings.BLdis = BLdis; outgoingReadings.BMdis = BMdis; outgoingReadings.BRdis = BRdis;
+
+  outgoingReadings.FLang = FLang; outgoingReadings.FRang = FRang;
+  outgoingReadings.BLang = BLang; outgoingReadings.BRang = BRang;
+
+  outgoingReadings.coordx = coordx; outgoingReadings.coordy = coordy;
+  outgoingReadings.timeHour = timeHour; outgoingReadings.timeMin = timeMin; outgoingReadings.timeSec = timeSec; outgoingReadings.timeCentSec = timeCentSec;
+}
+*/
+//////////////////////////////////Multiplexer/////////////////////////////////
+void TCA9548A (uint8_t bus) {     //Function to select channel on multiplexer
+  Wire.beginTransmission(0x70);
+  Wire.write(1<<bus);
+  Wire.endTransmission();
 }

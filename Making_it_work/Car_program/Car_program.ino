@@ -6,7 +6,7 @@
 //#include <iostream>
 using namespace std;
 ////////////////////////////////Wireless prep///////////////////////////
-uint8_t destMACaddress[] = {0x20,0x43,0xa8,0x64,0x16,0x20};   //MAC address of PEER ESP32
+uint8_t destMACaddress[] = {0x20,0x43,0xa8,0x62,0xb8,0x54};   //MAC address of PEER ESP32
 uint8_t inSampleRate = 0;                                           //Variable to store desired sample rate from receiver
 uint8_t inReady = 0;
 uint8_t delays = 25;                                          //Variable to store time delay between T-o-F readings

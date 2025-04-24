@@ -21,6 +21,12 @@ int FLdis = 0; int FMdis = 0; int FRdis = 0;
 int BLdis = 0; int BMdis = 0; int BRdis = 0;
 int FLang = 0; int FRang = 0;
 int BLang = 0; int BRang = 0;
+double coordx = 0; double coordy;
+unsigned long startTime;                //First time, in ms, a reading is taken
+unsigned long timeHour;                     //Tracker for time
+unsigned long timeMin;
+unsigned long timeSec;
+unsigned long timeCentSec;
 
 typedef struct struct_message1 {                               //Struct to hold incoming readings
   int FLdis; int FMdis; int FRdis;
@@ -28,6 +34,9 @@ typedef struct struct_message1 {                               //Struct to hold 
 
   int FLang; int FRang;
   int BLang; int BRang;
+
+  double coordx; double coordy;
+  int timeHour; int timeMin; int timeSec; int timeCentSec;
 } struct_message1;
 struct_message1 incomingReadings;
 
@@ -63,9 +72,12 @@ void OnDataRecv (const uint8_t* mac, const uint8_t* incomingData, int len) {
   FLang = incomingReadings.FLang; FRang = incomingReadings.FRang;
   BLang = incomingReadings.BLang; BRang = incomingReadings.BRang;
 
+  coordx = incomingReadings.coordx; coordy = incomingReadings.coordy;
+  timeHour = incomingReadings.timeHour; timeMin = incomingReadings.timeMin; timeSec = incomingReadings.timeSec; timeCentSec = incomingReadings.timeCentSec;
+
   tStamp = millis() - lapStart;
 
-  cout<<lapCounter<<","<<tStamp<<","<<FLdis<<","<<FMdis<<","<<FRdis<<","<<BLdis<<","<<BMdis<<","<<BRdis<<","<<FLang<<","<<FRang<<","<<BLang<<","<<BRang<<"\n";
+  cout<<lapCounter<<","<<tStamp<<","<<FLdis<<","<<FMdis<<","<<FRdis<<","<<BLdis<<","<<BMdis<<","<<BRdis<<","<<FLang<<","<<FRang<<","<<BLang<<","<<BRang<<","<<coordx<<","<<coordy<<","<<timeHour<<":"<<timeMin<<":"<<timeSec<<"."<<timeCentSec<<"\n";
   /*
   cout<<"\n\r"<<FLdis<<" "<<FMdis<<" "<<FRdis;
   cout<<"\n\r"<<BLdis<<" "<<BMdis<<" "<<BRdis;
