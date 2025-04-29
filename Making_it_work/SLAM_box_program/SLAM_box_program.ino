@@ -114,9 +114,3 @@ void OnDataRecv (const uint8_t* mac, const uint8_t* incomingData, int len) {
   outgoingReadings.FLang = incomingReadings.FLang; outgoingReadings.FRang = incomingReadings.FRang;
   outgoingReadings.BLang = incomingReadings.BLang; outgoingReadings.BRang = incomingReadings.BRang;
 }
-//////////////////////////////////Multiplexer/////////////////////////////////
-void TCA9548A (uint8_t bus) {     //Function to select channel on multiplexer
-  Wire.beginTransmission(0x70);
-  Wire.write(1<<bus);
-  Wire.endTransmission();
-}

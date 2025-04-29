@@ -55,7 +55,7 @@ function ThreeDPlot(selectedTime, selLapTable)
         if timeOfReading == selectedTime
             FRz = -1*selLapTable{b,2};    %FR
             FMz = -1*selLapTable{b,3};    %FM
-            FLz = 30 + (-1*selLapTable{b,4});    %FL
+            FLz = -1*selLapTable{b,4};    %FL
             BRz = -1*selLapTable{b,5};    %BR
             BMz = -1*selLapTable{b,6};    %BM
             BLz = -1*selLapTable{b,7};    %BL
@@ -86,7 +86,7 @@ function TwoDFloorPlots (selectedTime, selLapTable)
         if timeOfReading == selectedTime
             FRz = -1*selLapTable{b,2};    %FR
             FMz = -1*selLapTable{b,3};    %FM
-            FLz = 30 + (-1*selLapTable{b,4});    %FL
+            FLz = 30 -1*selLapTable{b,4};    %FL
             BRz = -1*selLapTable{b,5};    %BR
             BMz = -1*selLapTable{b,6};    %BM
             BLz = -1*selLapTable{b,7};    %BL

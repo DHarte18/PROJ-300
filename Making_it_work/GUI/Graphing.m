@@ -1,7 +1,6 @@
 freshData = readtable("C:\Users\demil\Documents\GitHub\PROJ-300\Testing_stuff\Test2.txt");
 H = height(freshData);
-%Time = 0; FLdis = 0; FMdis = 0; FRdis = 0; BLdis = 0; BMdis = 0; BRdis = 0; FLang = 0; FRang = 0; BLang = 0; BRang = 0;
-selLapTable = table;%(Time, FLdis, FMdis, FRdis, BLdis, BMdis, BRdis, FLang, FRang, BLang, BRang);
+selLapTable = table;    %(Time, FLdis, FMdis, FRdis, BLdis, BMdis, BRdis, FLang, FRang, BLang, BRang);
 lapSelect = 2;
 a=1;
 while H >= a
@@ -18,7 +17,3 @@ while H >= a
 end
 
 Timeline(selLapTable);
-% Assume the figure is still open and active
-%h = gcf;  % Or use stored handle
-%currentSelectedTime = h.UserData
-%disp(['Current selected time: ', num2str(currentSelectedTime)]);
