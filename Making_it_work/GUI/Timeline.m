@@ -44,6 +44,7 @@ function onClick(figHandle)
     ThreeDPlot(selectedTime, selLapTable);
     TwoDFloorPlots(selectedTime, selLapTable);
     MacPhersonDraw(selectedTime, selLapTable);
+    %GeoPlot(selectedTime, selLapTable);
 end
 
 function ThreeDPlot(selectedTime, selLapTable)
@@ -77,7 +78,17 @@ function ThreeDPlot(selectedTime, selLapTable)
     view(3);
     set(gca, 'Units', 'pixels', 'Position', [1150,60,750,350])
 end
+function GeoPlot (selectedTime, selLapTable)
+    b = 1;
+    Latitiude = selLapTable{b,14};
+    Longitude = selLapTable{b,15};
+    while b < height(selLapTable)
+        timeOfReading = selLapTable{b,1};
+        if timeOfReading == selectedTime
+        end
+    end
 
+end
 function TwoDFloorPlots (selectedTime, selLapTable)
     y = [210;105;0];
     b = 1;
